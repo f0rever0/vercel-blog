@@ -1,0 +1,89 @@
+---
+title: "git action workflow yaml 파일 작성하기"
+publishedAt: "2024-06-02"
+summary: "CI/CD 고도화작업을 위한 git workflow 파일 작성하기"
+---
+
+## 1. 배경
+
+회사 내 프로덕트 CI/CD 고도화작업을 위해 git action workflow file를 작성하였다.
+
+## 2. 도입
+
+먼저, workflow 파일이 `dev`, `qa`, `stg`, `main` 브랜치에 대한 pull request가 있을 때만 트리거되게 하였다.
+
+다음과 같이 dev에서 qa로 pull request를 열게 되면 github docs에 따라 브랜치를 지칭할 수 있다.
+
+dev( `head_ref`, 소스 브랜치 ) -> qa( `base_ref`, 타겟 브랜치 )
+
+cypress 테스트를 실행하기 위해서는 2단계를 거친다.
+
+1. fork한 브랜치에서 pr을 생성할때는 dev로 build, 그 외에 브랜치일경우는 소스브랜치 기준으로 build 진행
+2. cypress를 실행할 때 소스 브랜치 기준으로(head_ref) config cypress config 파일이 주입
+
+```
+name: front test check
+
+on:
+  pull_request:
+    branches: [dev, qa, stg, main]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: yarn install
+      run: yarn install --immutable
+    - name: yarn build ( when building on feature )
+      if: ${{ github.base_ref == 'dev' }}
+      run: yarn build:${{ github.base_ref }}
+    - name: yarn build ( when building on dev, qa, stg )
+      if: ${{ github.base_ref == 'qa' || github.base_ref == 'stg' || github.base_ref == 'main' }}
+      run: yarn build:${{ github.head_ref }}
+    - name: Cypress run with env ( when merge from dev )
+      if: ${{ github.head_ref == 'dev' }}
+      uses: cypress-io/github-action@v6
+      with:
+        start: yarn preview
+        config-file: cypress.config.js
+      env:
+        // CYPRESS_ENVIRONMENT :
+        // CYPRESS_NUXT_APP_API_URL :
+    - name: Cypress run with env ( when merge from qa )
+      if: ${{ github.head_ref == 'qa'}}
+      uses: cypress-io/github-action@v6
+      with:
+        start: yarn preview
+        config-file: cypress.config.js
+      env:
+        // CYPRESS_ENVIRONMENT :
+        // CYPRESS_NUXT_APP_API_URL :
+    - name: Cypress run with env ( when merge from stg )
+      if: ${{ github.head_ref == 'stg' }}
+      uses: cypress-io/github-action@v6
+      with:
+        start: yarn preview
+        config-file: cypress.config.js
+      env:
+        // CYPRESS_ENVIRONMENT :
+        // CYPRESS_NUXT_APP_API_URL :
+    - name: Cypress run with env ( when merge from main )
+      if: ${{ github.head_ref == 'main' }}
+      uses: cypress-io/github-action@v6
+      with:
+        start: yarn preview
+        config-file: cypress.config.js
+      env:
+        // CYPRESS_ENVIRONMENT :
+        // CYPRESS_NUXT_APP_API_URL :
+```
+
+## 3. 결과
+
+workflow를 작성해보는 것은 처음이라 굉장히 어려웠다. 테스트를 하려면 push를 해서 action이 다 돌아야만 성공/실패가 확인되기 때문에 작업하는데 시간이 걸렸다. 하지만 이를 통해 github docs도 읽고 브랜치 구성 전략에 대해 다시 고민해볼 수 있었다. 또한 이후 버그 수정을 할때에도 테스트 코드 성공여부를 바로 확인할 수 있어서 개발의 안정성이 올라간 것 같다!
+
+🙇‍♂️ 참고문헌
+
+[GitHub Docs](https://docs.github.com/en/actions/learn-github-actions/contexts)
