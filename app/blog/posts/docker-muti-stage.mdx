@@ -1,0 +1,50 @@
+---
+title: "multi-stage를 활용하여 docker build size 줄이기"
+publishedAt: "2024-03-05"
+summary: "multi-stage를 활용하여 docker build size 줄이기"
+---
+
+## 1. 배경
+
+현재 프론트엔드 폴더를 빌드한 docker image를 container에 띄우는데, docker를 빌드할때 오랜 시간이 걸려서 멀티 스테이지를 적용해보았다!
+
+## 2. 도입
+
+### 멀티스테이지(multi-stage)는 무엇인가
+
+![멀티스테이지 설명](https://github.com/f0rever0/f0rever0/assets/62867581/d1184f47-90a8-47b8-ab18-ec39b5513bc2)
+
+docker는 각 stage에서 필요한 파일만 가져와서 가장 마지막에 실행된 stage로 최종 이미지를 구성한다.
+
+이러한 특성을 활용해 build stage 와 production stage 컨테이너 작업 단위를 분리한다.
+
+production stage에서는 build stage에서 산출된 build 결과물을 가져온다. 빌드 캐시를 활용해 중복된 작업을 피하고, 서비스를 실행하는데 사용되지 않는 빌드 파일이 최종 이미지에 포함되지 않아 빌드 크기가 줄어든다.
+
+### Dockerfile 코드 작성하기
+
+```
+// Build Stage
+FROM node:18.18.0-alpine AS build
+WORKDIR /usr/src/app
+COPY package.json yarn.lock ./
+RUN yarn install
+COPY . .
+RUN yarn build:$env
+
+// Production Stage
+FROM node:18.18.0-alpine
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/app/.output ./.output
+COPY --from=build /usr/src/app/package.json ./package.json
+CMD ["node", ".output/server/index.mjs"]
+```
+
+## 3. 결과
+
+![멀티스테이지 적용한 build 크기 변화](https://github.com/f0rever0/f0rever0/assets/62867581/a5d94b43-5e80-404c-820f-c48270200323)
+
+→ multi-stage 를 적용했을때 용량이 2.46GB 에서 **184.38MB** 로 용량 감소
+
+🙇‍♂️ 참고문헌
+
+[Dockerfile - Multi-stage build(멀티스테이지 빌드)](https://kimjingo.tistory.com/63)
