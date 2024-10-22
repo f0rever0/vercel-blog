@@ -1,0 +1,241 @@
+---
+title: "검색엔진에 친화적인 사이트 구축하기(SEO)"
+publishedAt: "2024-10-21"
+summary: "서비스 상세페이지를 구글, 네이버와 같은 검색 사이트에 노출시키기 위해 robots.txt, sitemap을 활용하여 검색엔진에 친화적인 사이트를 구축하는 방법"
+---
+
+## 배경
+
+회사에서 신규 서비스를 출시한 이후, 게시글 상세 페이지가 추가되면서 검색엔진 최적화 작업을 맡게 되었습니다.
+검색엔진에 친화적인 사이트를 구축하면 검색 엔진에 자신의 사이트를 노출시켜 사용자 유입을 증가시킬 수 있습니다.
+
+검색 엔진 사이트에서 게시글 상세 페이지가 노출되기 위해 진행한 작업은 다음과 같습니다.
+만약 자신의 사이트가 검색 엔진 사이트에 잘 노출되지 않는다면 아래 사항들이 잘 적용되었는지 확인해보세요!
+
+- robots.txt 작성
+- sitemap.xml 작성
+- 구글 serach console 등록
+- 네이버 웹마스터 등록
+- (추가) 사이트 이동 경로(breadCrumb) 설정하기
+
+## 도입
+
+#### 1. robots.txt 작성
+
+인터넷 상에는 웹사이트 url에 접속하여 웹페이지를 수집하는 웹 크롤러의 일종인 웹 로봇이 있습니다. 이 웹 로봇들은 자동으로 동작하며 방문한 사이트의 정보를 수집해 검색엔진에 등록합니다. 적절한 robots.txt를 작성하면, 웹로봇들의 동작을 제어하여 원하는 문서만 검색엔진에 수집되도록 할 수 있습니다.
+
+robots.txt 파일은 반드시 root에 위치해야 합니다.
+
+• 예) http://www.example.com/robots.txt
+
+User-agent 를 통해 로봇 종류를 명시하고 Disallow / Allow 속성을 통해 로봇의 수집 허용 유무를 표기합니다.
+
+```jsx
+// robots.txt
+
+// 모든 로봇의 수집을 허용하지 않음
+User-agent: *
+Disallow: /
+
+// 네이버 로봇(Yeti)의 수집 허용
+User-agent: Yeti
+Allow: /
+```
+
+[대표적인 웹크롤러]
+
+- Bytespider : TikTok
+- GPTBot : OpenAI
+- Yeti : 네이버
+
+웹크롤러가 수집할 수 있는 웹 페이지를 각각 명시적으로 표기할 수도 있습니다.
+
+```jsx
+// robots.txt
+
+// Yeti가 /users 페이지는 수집하지 않고 /playground, /notices 페이지 문서 정보만 수집합니다.
+User-agent: Yeti
+Disallow: /users
+
+Allow: /playground
+Allow: /notices
+```
+
+#### 2. 사이트맵
+
+사이트맵(sitemap)은 사이트 내의 수집 대상 URL 목록을 구조적으로 표기하여 웹 로봇에게 알려주는 XML 형식의 파일입니다.
+웹 로봇은 사이트맵의 트리구조를 따라 사이트에 방문합니다. 새로운 페이지가 생성될 때 이를 사이트맵에 명시하면 웹 로봇이 해당 페이지들을 누락되지 않고 수집하게 도와줄 수 있습니다.
+
+robots.txt에 sitemap.xml를 표기할 수 있습니다. 하나의 sitemap.xml 파일 내에는 최대 50,000개의 url을 포함할 수 있습니다. 50,000개 이상의 사이트맵 주소가 포함될 것을 대비하여, 사이트맵 주소를 담고있는 index 파일을 생성하고 그 내부에 세부 인덱스( sitemap1, sitemap2 … )를 가진 사이트맵을 생성합니다.
+
+```
+// robots.txt
+Sitemap: https://example.com/sitemap/index.xml
+```
+
+<br />
+```
+
+// https://example.com/sitemap/index.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  // sitemap1
+  <sitemap>
+    <loc>http://www.example.com/sitemap/sitemap1.xml</loc>
+    <lastmod>2016-02-26T18:41:07+09:00</lastmod>
+  </sitemap>
+  // sitemap2
+  <sitemap>
+    <loc>http://www.example.com/sitemap/sitemap2.xml</loc>
+    <lastmod>2015-05-14T21:06:14+09:00</lastmod>
+  </sitemap>
+</sitemapindex>
+
+```
+
+<br />
+```
+
+// https://example.com/sitemap/sitemap1.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://www.example.com/case/1</loc>
+    <lastmod>2024-08-01T10:57:06+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://www.example.com/case/2</loc>
+    <lastmod>2024-08-01T10:57:09+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+```
+
+[sitemap 속성]
+
+- url : 페이지 url
+- lastmod : 마지막 수정 날짜
+- changefreq : 변경 주기
+
+  - always: 항상 변경
+  - hourly: 매시간 변경
+  - daily: 매일 변경
+  - weekly: 매주 변경
+  - monthly: 매월 변경
+  - yearly: 매년 변경
+  - never: 변경되지 않음
+
+- priority : 0에서 1사이의 페이지 우선순위
+  - 1.0-0.8: 높은 우선순위 ( 예 : 홈페이지와 같은 사이트의 주요 진입 페이지의 우선순위 1.0, 상품 페이지등 중요한 정보를 담고있는 페이지는 우선순위 0.8 )
+  - 0.7-0.4: 중간 우선순위
+  - 0.3-0.0: 낮은 우선순위
+
+#### 3. 검색 엔진 사이트 등록
+
+robots.txt와 sitemap.xml 파일을 구글, 네이버와 같은 검색 엔진 사이트 사이트에 등록하면 더 빨리 웹 로봇에게 알려줄 수 있습니다.
+
+- 구글 서치 콘솔 [https://search.google.com/search-console/welcome?hl=ko](https://search.google.com/search-console/welcome?hl=ko)
+
+- 네이버 웹 마스터 도구 [https://searchadvisor.naver.com/console/board](https://searchadvisor.naver.com/console/board)
+
+#### + 추가) **사이트 이동 경로(breadCrumb)**
+
+구글과 네이버에 사이트를 노출할 때 상세 페이지의 계층 구조 설정하여 사이트 이동 경로를 사용자에게 보여줄 수 있습니다.
+
+**[구글 검색 화면]**
+
+![구글 breadCrumb](https://github.com/user-attachments/assets/d6345585-fbe4-4d5e-b8eb-1f953d1b6182)
+
+**[네이버 검색 화면]**
+
+![네이버 breadCrumb](https://github.com/user-attachments/assets/6f2ad600-d53f-4c36-9c5d-ab5efdddb118)
+
+`<head>` 태그 안에 schema.org에서 정의한 [BreadcrumbList](https://schema.org/BreadcrumbList) 활용하는 예시입니다.
+계층 구조가 넓은 범위( 예 : 음식 )부터 시작하여 좁은 범위 ( 예 : 여름 과일 )가 되도록 작성해야합니다.
+
+```jsx
+<head>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "item": "https://example.com", "name": "음식" },
+        { "@type": "ListItem", "position": 2, "item": "https://example.com/fruits", "name": "과일" },
+        { "@type": "ListItem", "position": 3, "item": "https://example.com/fruits/summer", "name": "여름 과일" }
+      ]
+    }
+  </script>
+</head>
+```
+
+vue에서는 useHead를 이용하여 동적으로 head를 생성할 수 있습니다. script 코드를 head 안에서 실행하게 되면 itemList name 변수도 동적으로 생성이 가능합니다.
+
+```jsx
+// vue
+<script setup lang="ts">
+const weather = ref<string>('summer');
+
+useHead({
+  script: [
+  {
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+          { "@type": "ListItem", "position": 1, "item": "https://example.com", "name": "음식" },
+          { "@type": "ListItem", "position": 2, "item": "https://example.com/fruits", "name": "과일" },
+          { "@type": "ListItem", "position": 3, "item": "https://example.com/fruits/summer", "name": `${weather.value} 과일` }
+        ]
+    })
+  }]
+});
+</script>
+```
+
+next.js [공식문서](https://nextjs.org/docs/app/building-your-application/optimizing/metadata#json-ld) 에서 JSON-LD를 `<script>` 태그를 이용해 구조화된 데이터를 보여주는 것을 권장합니다.
+
+```jsx
+// next.js
+export default async function Page({ params }) {
+  const product = await getProduct(params.id);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: product.image,
+    description: product.description,
+  };
+
+  return (
+    <section>
+      {/* Add JSON-LD to your page */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {/* ... */}
+    </section>
+  );
+}
+```
+
+## 결과
+
+사용자 유입과 편리성을 위하여 사이트를 검색 엔진에 원하는 형식으로 노출시키는 것이 중요하다고 생각합니다.
+해당 작업을 거친뒤 구글은 약 48시간 뒤에 네이버는 2~3주 뒤 순차적으로 sitemap.xml에 등록한 페이지들이 노출되었습니다.
+
+네이버 가이드가 친절하게 설명되어있으니 해당 자료를 참고하여 기본적인 프로젝트 세팅을 하고 원하는 검색엔진 사이트에 맞추어 추가적인 부분을 세팅하면 좋을 것 같습니다.
+
+🙇‍♂️ 참고문헌
+
+참고자료 : [네이버 웹마스터 가이드](https://searchadvisor.naver.com/guide)
