@@ -1,0 +1,227 @@
+---
+title: "svg icon 라이브러리 만들기"
+publishedAt: "2024-11-05"
+summary: "sopt-makers 디자인 시스템 구축 | svg icon 라이브러리"
+---
+
+## 서론
+
+[sopt makers](https://makers.sopt.org/) 팀은 [SOPT 동아리](https://www.sopt.org/) 운영에 필요한 프로덕트를 만듭니다. SOPT 동아리에서 사용하는 여러 프로덕트 간 일관된 디자인과 효율적인 개발을 위해서 디자인 시스템의 필요성이 제기되었습니다.
+이에 공감하여, 디자인 시스템 TF에 참여하게 되었습니다.
+
+디자인 시스템은 모든 개발자가 편리하게 사용할 수 있어야 한다고 생각했기 때문에, 혼자서만 고민하고 개발하기보다 여러 개발자의 의견을 듣고 최적의 사용 방법을 찾아갔습니다.
+
+icon 디자인 시스템을 개발하며 마주쳤던 고민들과 그 해결 과정을 정리해 보았습니다.
+
+## 본론
+
+**1. icon 네이밍 규칙과 폴더 구조**
+
+수십 개의 아이콘을 효율적으로 분류할 기준이 필요했습니다.
+이를 위해, 디자이너분들이 Figma에서 각 아이콘에 지정한 이름 앞에 Icon이라는 prefix를 붙이기로 했습니다.
+이렇게 함으로써, 개발자가 Figma에 명시된 아이콘 이름만 보고도 원하는 아이콘을 쉽게 찾을 수 있도록 했습니다.
+
+아이콘은 지정된 그룹에 맞추어 폴더별로 정리했습니다. 각 폴더에 존재하는 index.ts 파일은 폴더 내 모든 .tsx 파일을 export하도록 구성하였고, 최상위 index.ts에서는 각 폴더의 index를 export하여 전체 폴더 구조를 잡았습니다.
+
+```mdx
+├─ src
+│ ├─ Icon
+│ │ ├─ Communication // icon 종류에 따라 폴더 구분
+│ │ │ ├─ ic-archive.tsx
+│ │ │ ├─ ic-bookmark.tsx
+│ │ │ ├─ ic-edit.tsx
+│ │ │ └─ index.ts // 각 폴더별 icon export
+...
+│ │ ├─ icon.d.ts
+│ │ └─ index.ts // 전체 icon export
+```
+
+`src/Icons/{폴더명}/index.ts`에서 각 폴더 내부에 있는 모든 컴포넌트들을 export 합니다.
+
+```jsx
+// src/Icons/{폴더명}/index.ts
+
+export { default as IconArchive } from "./ic-archive";
+export { default as IconBookMark } from "./ic-bookmark";
+export { default as IconEdit } from "./ic-edit";
+```
+
+`src/Icons/index.ts`에서 폴더별로 전체 icon 코드 export 합니다.
+
+```jsx
+// src/Icons/index.ts
+
+export * from "./src/Communication/index";
+export * from "./src/Editor/index";
+export * from "./src/Files/index";
+export * from "./src/Interaction/index";
+export * from "./src/Media/index";
+export * from "./src/Users/index";
+...
+```
+
+**2. jsx component로 svg 사용하기**
+
+모든 sopt-makers 프로덕트에서 next.js를 사용하고 있어 아래 예시처럼 사용자가 `icon.svg`을 import할 때 react component로 변환하여 사용하는 방식을 생각했습니다.
+
+```
+import { ReactComponent as IconArchive } from "@sopt-makers/icons";
+```
+
+하지만 이 방식은 프레임워크/라이브러리, 더 나아가 번들러 종류에 따라 제한적으로 사용될 수 있습니다. 각 환경에서 SVG 파일을 처리하는 방법이 다를 수 있기 때문입니다.
+
+svg 파일을 import 하는 방식은 webpack, esbuild, babel 등의 번들러를 활용해 svg 파일을 인라인 자바스크립트 코드로 변환합니다.
+대표적으로 Next.js 에서는 svg import 를 지원하기 위해서 svgr 이라는 웹팩 로더를 사용합니다.
+다음과 같이 webpack config에 svgr 로더를 넣어주면, build 과정에서 .svg 를 import 하는 부분을 읽고 해당 svg를 인라인으로 변환한 컴포넌트 파일을 생성하여 import하는 방식으로 바꿔주는 동작합니다.
+
+```js
+// config
+
+const nextConfig = {
+  reactStrictMode: true,
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
+    });
+    return config;
+  },
+};
+
+export default nextConfig;
+```
+
+따라서 번들러와 세팅 방식의 구현 환경에 따라 import한 svg의 동작 방식이 달라질 위험이 있었습니다.
+
+svg를 jsx 형태로 tsx 파일에 담아 export하는 방식으로 구현했습니다.
+
+**3. forwardRef**
+
+동아리 내 여러 프로젝트에서 Framer Motion 등을 사용하여, ref를 통해 svg에 직접 접근해야하는 상황이 있었습니다.
+이를 위해 [forwardRef](https://react.dev/reference/react/forwardRef)를 활용해 외부로부터 ref를 전달받을 수 있도록 하였습니다.
+또한, svg 스타일 속성을 CSS로 제어하는 props도 받아서 사용할 수 있도록 다음과 같이 tsx 파일을 작성했습니다.
+
+```jsx
+import { HTMLAttributes, forwardRef } from 'react';
+
+interface IconArchiveProps extends HTMLAttributes<SVGSVGElement> {
+}
+
+const IconArchive= forwardRef<SVGSVGElement, IconArchiveProps>((props, ref) => {
+  return (
+    <svg ref={ref} {...props}>
+    </svg>
+  );
+});
+```
+
+**4. svg currentColor 속성**
+
+CSS로 svg 색상을 제어하기 위해 svg currentColor 속성을 사용했습니다.
+svg에서 `currentColor` 속성을 활용하며 `fill`이나 `stroke`에서 css `color` 속성을 활용해 색상을 제어할 수 있습니다.
+fill="none", stroke="currentColor"로 색상을 부여하여 icon 내부 색상을 채우지 않고 icon 윤곽선 색상만 변경되도록 하였습니다.
+
+```jsx
+import { HTMLAttributes, forwardRef } from 'react';
+
+interface IconArchiveProps extends HTMLAttributes<SVGSVGElement> {}
+
+const IconArchive = forwardRef<SVGSVGElement, IconArchiveProps>(
+  (props, ref) => {
+    return (
+      <svg
+        {...props}
+        ref={ref}
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+					...
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+);
+
+export default IconArchive;
+```
+
+다음과 같은 방식으로 icon을 불러와 스타일을 부여할 수 있습니다.
+
+```jsx
+import { IconArchive } from "@sopt-makers/icons";
+
+// 1. in-line
+<IconArchive style={{ width: "16px", height: "16px", color: "orange" }} />;
+
+// 2. styled-component
+export const Icon = styled(IconArchive)`
+  width: 32px;
+  height: 32px;
+  color: red;
+
+  :hover {
+    color: blue;
+  }
+`;
+```
+
+**🎨 스토리북**
+
+개발자, 디자이너의 원활한 작업과 소통을 위하여 icon 라이브러리 스토리북을 배포하였습니다.
+
+![스크린샷 2024-10-14 오후 9.32.52.png](https://github.com/user-attachments/assets/860fdcc9-0613-48c5-b6c2-f685a9bb112d)
+
+```jsx
+import * as Icons from "@sopt-makers/icons";
+
+export default {
+  title: "icons/Icons",
+};
+
+export const Default = {
+  argTypes: {
+    color: { control: "color" },
+  },
+  render: (props: { color: string }) => {
+    const style = { width: 24, height: 24, color: props.color };
+
+    return (
+      <div className="icons-group">
+        <h4>Communication</h4>
+        <div>
+          <Icons.IconArchive style={style} />
+          <p>archive</p>
+        </div>
+        <div>
+          <Icons.IconBookMark style={style} />
+          <p>bookmark</p>
+        </div>
+        <div>
+          <Icons.IconEdit style={style} />
+          <p>edit</p>
+        </div>
+        ...
+      </div>
+    );
+  },
+};
+```
+
+## 결론
+
+디자인 시스템을 구축하며 효율적인 개발과 협업을 위한 다양한 측면을 고려한 경험을 쌓을 수 있었습니다.
+
+이전 프로젝트에서는 주로 기획안 기능 구현 작업을 진행했는데 디자인 시스템 개발이라는 새로운 영역에 도전할 수 있었습니다.
+라이브러리를 만드는 과정을 통해 커뮤니케이션을 고려한 네이밍 규칙, icon의 확장성과 재사용성에 대해 고민해볼 수 있었으며 더 나아가 webpack의 작동 방식에 대해서도 공부해볼 수 있었습니다.
+
+🙇‍♂️ 참고문헌
+
+참고자료 : [import-svgs-next-js-apps](https://blog.logrocket.com/import-svgs-next-js-apps/)
+
+참고자료 : [[NEXTjs] svg를 ReactComponent처럼 사용하는 방법 (+storybook)](https://zubetcha.tistory.com/entry/NEXTjs-svg%EB%A5%BC-ReactComponent%EB%A1%9C-import-%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95-storybook-1)
