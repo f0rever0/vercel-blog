@@ -1,17 +1,17 @@
 ---
 title: "svg icon 라이브러리 만들기"
 publishedAt: "2024-11-05"
-summary: "sopt-makers 디자인 시스템 구축 | svg icon 라이브러리"
+summary: "jsx component를 활용한 svg icon 라이브러리 개발기"
 ---
 
 ## 서론
 
-[sopt makers](https://makers.sopt.org/) 팀은 [SOPT 동아리](https://www.sopt.org/) 운영에 필요한 프로덕트를 만듭니다. SOPT 동아리에서 사용하는 여러 프로덕트 간 일관된 디자인과 효율적인 개발을 위해서 디자인 시스템의 필요성이 제기되었습니다.
+[sopt makers](https://makers.sopt.org/)는 [SOPT 동아리](https://www.sopt.org/) 운영에 필요한 프로덕트를 만듭니다. SOPT 동아리에서 사용하는 여러 프로덕트 간 일관된 디자인과 효율적인 개발을 위해서 디자인 시스템의 필요성이 제기되었습니다.
 이에 공감하여, 디자인 시스템 TF에 참여하게 되었습니다.
 
 디자인 시스템은 모든 개발자가 편리하게 사용할 수 있어야 한다고 생각했기 때문에, 혼자서만 고민하고 개발하기보다 여러 개발자의 의견을 듣고 최적의 사용 방법을 찾아갔습니다.
 
-icon 디자인 시스템을 개발하며 마주쳤던 고민들과 그 해결 과정을 정리해 보았습니다.
+icon 라이브러리를 개발하며 마주쳤던 고민들과 그 해결 과정을 정리해 보았습니다.
 
 ## 본론
 
@@ -173,9 +173,7 @@ export const Icon = styled(IconArchive)`
 
 **🎨 스토리북**
 
-개발자, 디자이너의 원활한 작업과 소통을 위하여 icon 라이브러리 스토리북을 배포하였습니다.
-
-![스크린샷 2024-10-14 오후 9.32.52.png](https://github.com/user-attachments/assets/860fdcc9-0613-48c5-b6c2-f685a9bb112d)
+개발자, 디자이너의 원활한 작업과 소통을 위해 icon 라이브러리 스토리북을 배포하였습니다.
 
 ```jsx
 import * as Icons from "@sopt-makers/icons";
