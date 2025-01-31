@@ -83,8 +83,12 @@ TanStack v5에서는 onSuccess, onError, onSettled가 deprecated 되었습니다
 
 onError를 useQuery에서 호출하는 코드는 다음과 같은 문제가 있습니다.
 
-만약 아래 예시의 `useTodos()` 를 여러 컴포넌트에서 사용하고 있을때 useTodo 호출시 에러가 발생한다면 useTodos를 사용하는 횟수 만큼 에러가 발생할 것입니다.
+useQuery의 onError 콜백은 모든 Observer에 대해 호출됩니다. 만약 아래 예시의 `useTodos()` 를 여러 컴포넌트에서 사용하고 있을때 useTodo 호출시 에러가 발생한다면 useTodos를 사용하는 횟수만큼 에러가 발생할 것입니다.
+즉, 애플리케이션에서 useTodos를 두 번 호출하면 네트워크 요청이 한 번만 실패하더라도 두 번의 에러 토스트가 뜨게 됩니다.
+
 해당 데이터 요청이 실패한건 한 번일 뿐인데, 사용하는 호출횟수 만큼 에러가 발생하는 것은 react에서 에러 처리를 위해 useEffect를 사용하는 것과 별반 차이가 없는 셈입니다.
+
+따라서 에러 처리를 각 useQuery에서 하지 않고, `QueryClient`로 전역 콜백함수을 설정하는 것을 권합니다.
 
 ```js
 const useTodos = () =>
@@ -95,9 +99,6 @@ const useTodos = () =>
     onError: (error) => toast.error(`Something went wrong: ${error.message}`),
   });
 ```
-
-useQuery의 onError 콜백은 모든 Observer에 대해 호출되므로, 애플리케이션에서 useTodos를 두 번 호출하면 네트워크 요청이 한 번만 실패하더라도 두 번의 에러 토스트가 뜨게 됩니다.
-따라서 에러 처리를 각 useQuery에서 하지 않고, `QueryClient`로 전역 콜백함수을 설정하는 것을 권합니다.
 
 ```ts
 import type {
@@ -146,7 +147,7 @@ export default defineNuxtPlugin(({ vueApp, hooks }) => {
 });
 ```
 
-queryCache에서 에러를 통합 관리하였습니다.
+`queryCache`에서 에러를 통합 관리하였습니다.
 
 onError() 콜백 함수는 Query당 한 번만 호출됩니다. useQuery 호출시 에러가 발생하면 전역에서 처리되기 때문에 불필요하게 반복되지 않습니다. 그리고 useQuery를 호출한 컴포넌트 바깥에 존재하므로 클로저 문제가 발생하지 않습니다.
 
