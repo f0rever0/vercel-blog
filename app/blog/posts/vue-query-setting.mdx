@@ -1,0 +1,209 @@
+---
+title: "Vue에서 TanStack Query 설정 및 전역 에러 처리하기"
+publishedAt: "2025-01-31"
+summary: "Vue 프로젝트에서 TanStack Query를 설정하는 방법과 useQuery의 전역 에러 처리를 최적화하는 방법"
+---
+
+## 1. 배경
+
+프로젝트에서 api 호출에 대한 에러 및 데이터를 효율적으로 관리하기 위해 TanStack Query를 도입했습니다. vue에서 TanStack을 사용하기 위한 기본 세팅과 useQuery에 대한 전역 에러 처리 과정에 대해 소개합니다.
+
+## 2. 도입
+
+#### 설치
+
+다음과 같은 명령어로 `tanstack/vue-query`를 설치합니다.
+
+```
+npm i @tanstack/vue-query
+
+pnpm add @tanstack/vue-query
+
+yarn add @tanstack/vue-query
+```
+
+### 초기 세팅
+
+`vue-query.ts` 파일을 생성하고 VueQueryPlugin를 활용하여 초기 세팅을 진행합니다.
+
+```ts
+import { VueQueryPlugin } from "@tanstack/vue-query";
+
+vueApp.use(VueQueryPlugin);
+```
+
+### 기본 옵션
+
+이때 `vueApp.use(VueQueryPlugin, options);` 로 QueryClient에서 모든 useQuery 또는 useMutation에 기본 옵션을 추가할 수 있습니다.
+
+```ts
+import type {
+  DehydratedState,
+  VueQueryPluginOptions,
+} from "@tanstack/vue-query";
+import {
+  VueQueryPlugin,
+  QueryClient,
+  hydrate,
+  dehydrate,
+} from "@tanstack/vue-query";
+import { defineNuxtPlugin, useState } from "#imports";
+
+export default defineNuxtPlugin(({ vueApp, hooks }) => {
+  const vueQueryState = useState<DehydratedState | null>("vue-query");
+
+  // Modify your Vue Query global settings here
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { staleTime: 0, retry: 1, refetchOnMount: true },
+    },
+  });
+  const options: VueQueryPluginOptions = { queryClient };
+
+  vueApp.use(VueQueryPlugin, options);
+
+  if (process.server) {
+    hooks.hook("app:rendered", () => {
+      vueQueryState.value = dehydrate(queryClient);
+    });
+  }
+
+  if (process.client) {
+    hydrate(queryClient, vueQueryState.value);
+  }
+});
+```
+
+프로젝트에서는 실시간으로 데이터가 변경되므로 페이지 재접속시 api를 refetch 하도록 staleTime을 0초로 설정했습니다. 만약 실시간성 데이터가 아닐 경우 staleTime을 연장해서 사용할 수 있습니다.
+인증 관련 api가 있기에 에러 발생 즉시 다른 액션을 취해야함으로 retry 횟수를 낮게 설정하였습니다.
+
+### 전역 콜백 함수 사용
+
+TanStack v5에서는 onSuccess, onError, onSettled가 deprecated 되었습니다.
+
+onError를 useQuery에서 호출하는 코드는 다음과 같은 문제가 있습니다.
+
+만약 아래 예시의 `useTodos()` 를 여러 컴포넌트에서 사용하고 있을때 useTodo 호출시 에러가 발생한다면 useTodos를 사용하는 횟수 만큼 에러가 발생할 것입니다.
+해당 데이터 요청이 실패한건 한 번일 뿐인데, 사용하는 호출횟수 만큼 에러가 발생하는 것은 react에서 에러 처리를 위해 useEffect를 사용하는 것과 별반 차이가 없는 셈입니다.
+
+```js
+const useTodos = () =>
+  useQuery({
+    queryKey: ["todos"],
+    queryFn: fetchTodos,
+    // ⚠️ looks good, but is maybe _not_ what you want
+    onError: (error) => toast.error(`Something went wrong: ${error.message}`),
+  });
+```
+
+useQuery의 onError 콜백은 모든 Observer에 대해 호출되므로, 애플리케이션에서 useTodos를 두 번 호출하면 네트워크 요청이 한 번만 실패하더라도 두 번의 에러 토스트가 뜨게 됩니다.
+따라서 에러 처리를 각 useQuery에서 하지 않고, `QueryClient`로 전역 콜백함수을 설정하는 것을 권합니다.
+
+```ts
+import type {
+  DehydratedState,
+  VueQueryPluginOptions,
+} from "@tanstack/vue-query";
+import {
+  VueQueryPlugin,
+  QueryClient,
+  QueryCache,
+  hydrate,
+  dehydrate,
+} from "@tanstack/vue-query";
+import { defineNuxtPlugin, useState } from "#imports";
+import { handleApiError } from "@utils/error";
+
+export default defineNuxtPlugin(({ vueApp, hooks }) => {
+  const vueQueryState = useState<DehydratedState | null>("vue-query");
+
+  const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        handleApiError();
+      },
+    }),
+    defaultOptions: {
+      queries: {
+        retry: 0,
+        staleTime: 0,
+      },
+    },
+  });
+  const options: VueQueryPluginOptions = { queryClient };
+
+  vueApp.use(VueQueryPlugin, options);
+
+  if (process.server) {
+    hooks.hook("app:rendered", () => {
+      vueQueryState.value = dehydrate(queryClient);
+    });
+  }
+
+  if (process.client) {
+    hydrate(queryClient, vueQueryState.value);
+  }
+});
+```
+
+queryCache에서 에러를 통합 관리하였습니다.
+
+onError() 콜백 함수는 Query당 한 번만 호출됩니다. useQuery 호출시 에러가 발생하면 전역에서 처리되기 때문에 불필요하게 반복되지 않습니다. 그리고 useQuery를 호출한 컴포넌트 바깥에 존재하므로 클로저 문제가 발생하지 않습니다.
+
+#### 💡 클로저
+
+> 어떤 함수 A에서 선언한 변수 a를 참조하는 내부함수 B를 외부로 전달(return, 콜백)할 경우 A의 실행 컨텍스트가 종료된 이후에도 변수 a가 사라지지 않는 현상
+
+**useQuery 내부에서 클로저 문제 발생 가능성**
+
+onError 콜백을 useQuery 내에서 선언하면, 해당 컴포넌트의 상태(state)나 변수(variable)를 참조할 수 있습니다.
+이 경우, 해당 컴포넌트가 언마운트되어도 클로저를 통해 참조되던 값이 메모리에 남아 있을 수 있으며, 불필요한 리렌더링을 유발할 수 있습니다.
+
+#### 에러 함수 분리
+
+`handleApiError()` 전역 에러 로직을 추가하였습니다.
+
+useQuery에서 `isError` 옵션를 활용해 에러 처리를 할 수도 있지만, useQuery를 사용하는 모든 컴포넌트에서 이 코드를 작성해야 한다면 보일러 플레이트가 될 수 있습니다.
+
+따라서 에러 상태에 따른 액션을 실행하는 공통 함수를 만들고 이를 onError 콜백 함수에서 실행하도록 하였습니다.
+
+```ts
+const handleApiError = (errorCode: string) => {
+  switch (errorCode) {
+    case E0001:
+      navigateTo("/login", {
+        replace: true,
+      });
+      addToast({
+        text: "잘못된 로그인 정보입니다.",
+        type: "forbid",
+        timeout: 3000,
+      });
+      break;
+    case E0002:
+      navigateTo("/login", {
+        replace: true,
+      });
+      addToast({
+        text: "유저 토큰이 만료되었습니다.",
+        type: "forbid",
+        timeout: 3000,
+      });
+      break;
+    ...
+  }
+};
+```
+
+## 3. 결과
+
+TanStack을 사용하여 불필요한 에러 발생과 중복된 에러 처리 코드가 제거되어 유지보수성이 향상되었습니다.
+
+🙇‍♂️ 참고문헌
+
+[Breaking React Query's API on purpose
+](https://tkdodo.eu/blog/breaking-react-querys-api-on-purpose)
+
+[[번역] React Query API의 의도된 중단](https://velog.io/@cnsrn1874/breaking-react-querys-api-on-purpose)
+
+[React Query Error Handling](https://tkdodo.eu/blog/react-query-error-handling#the-global-callbacks)
