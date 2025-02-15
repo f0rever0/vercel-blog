@@ -1,5 +1,5 @@
 ---
-title: "브라우저 렌더링 및  JavaScript 이벤트 루프 이해하기"
+title: "브라우저 렌더링 및 JavaScript 이벤트 루프 이해하기"
 publishedAt: "2025-02-15"
 summary: "Vue의 nextTick을 시작으로 브라우저의 DOM 렌더링 과정과 JavaScript 이벤트 루프, 그리고 프론트엔드 프레임워크들의 작동 원리 살펴보기"
 ---
@@ -78,8 +78,11 @@ console.log("script end");
 #### Vue
 
 1. 상태가 변경되면, Vue는 이를 감지합니다.
+
 2. 변경사항을 즉시 DOM에 반영하지 않고, 마이크로 태스트 큐에 쌓아둡니다.
+
 3. 다음 "tick"에 변경사항을 일괄적으로 Virtual DOM에 적용합니다.
+
 4. 이전 Virtual DOM과 새 Virtual DOM을 비교하여 변경이 필요한 DOM 업데이트를 수행합니다.
 
 ```jsx
@@ -110,7 +113,9 @@ async function increment() {
 #### React
 
 1. 상태가 변경되면(`setState` 호출 등), 새로운 Virtual DOM 트리를 생성합니다.
+
 2. 이전 Virtual DOM과 비교 후 필요한 부분만 업데이트합니다.
+
 3. `useEffect` 와 같은 메서드로 업데이트된 값에 접근할 수 있습니다.
 
 ```jsx
