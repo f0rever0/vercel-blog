@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     default: "웅의 개발이야기",
     template: "%s",
   },
-  description: "This is my portfolio.",
+  description: "개발이야기를 담고있습니다.",
   openGraph: {
     title: "웅의 개발이야기",
     description: "웅의 개발이야기",
