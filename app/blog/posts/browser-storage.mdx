@@ -1,0 +1,194 @@
+---
+title: "적절한 브라우저 저장소 선택하기"
+publishedAt: "2025-03-08"
+summary: "브라우저 저장소인 세션스토리지, 로컬스토리지, 쿠키에 대한 개념과 적절한 사용법 알아보기"
+---
+
+## 서론
+
+클라이언트에서 데이터를 저장하고 싶다면 우리는 브라우저 저장소를 사용합니다. 브라우저에서 어떤 저장소를 사용할지는 매우 중요합니다. 잘못된 저장소 선택으로 인해 성능 저하나 보안 문제(예: XSS, CSRF)가 발생할 수 있습니다.
+
+브라우저에서 사용하는 저장소는 3가지 입니다.
+
+- 쿠키(Cookie)
+- 세션 스토리지(Session Storage)
+- 로컬 스토리지(Local Storage)
+
+그럼, 상황에 맞는 적절한 저장소를 사용하기 위해 쿠키(Cookie)부터 특징을 살펴보겠습니다.
+
+## 본론
+
+### 쿠키(Cookie)
+
+- 쿠키는 만료 기한이 있는 키-값 저장소입니다.
+- 쿠키는 클라이언트 측에서 저장되는 작은 텍스트 파일입니다.
+- 서버로부터 전송된 쿠키는 웹 브라우저에 저장되며, 이후 해당 웹 사이트를 방문할 때마다 해당 쿠키는 서버로 전송됩니다.
+- 쿠키는 4KB 용량 제한이 있습니다.
+- 매 서버 요청마다 서버로 쿠키가 같이 전송됩니다.
+
+### 🤷‍♂️ 서버에 쿠키가 전송되는 이유
+
+이를 더 자세히 알기 위해서는 서버와 클라이언트가 소통하는 HTTP 요청에 대해 알아야합니다. HTTP 요청은 Stateless 상태를 가집니다. Stateless 란 서버가 클라이언트 상태를 가지고 있지 않는다는 것을 의미합니다. 따라서 서버는 클라이언트 정보를 저장하지 않아 서버 확장에는 용이하지만, 어느 클라이언트인지 모르기 때문에 요청에 대한 응답을 보낼 수 없습니다.
+
+이를 해결하는 방법이 바로 쿠키입니다. 클라이언트는 서버에 HTTP 요청을 보낼때 쿠키에 클라이언트에 대한 정보를 담아서 보냅니다. 서버는 쿠키를 읽어서 클라이언트에 대한 정보를 파악할 수 있습니다.
+
+따라서 쿠키에 대한 모든 정보는 서버로 전송되기 때문에 서버에 불필요한 정보가 쿠키에 담겨져있다면 불필요한 오버헤드가 발생하고 대역폭 사용량이 증가할 수 있습니다.
+하지만, 쿠키는 도메인에 대한 모든 요청에 자동으로 포함되므로 XSS(Cross Site Scripting)에 취약합니다.
+
+### 쿠키 속성
+
+- **max-Age**: 쿠키가 유효한 시간(초)
+- **expires**: 쿠키가 만료되는 날짜와 시간
+- **path**: 쿠키가 전송될 URL 경로를 지정
+- **domain**: 쿠키가 전송될 도메인을 지정
+- **secure**: HTTPS 연결에서만 쿠키를 전송
+- **httpOnly**: JavaScript를 통한 쿠키 접근을 방지(XSS 공격 방어)
+- **SameSite**: CSRF 공격 방어를 위한 속성
+  - None: 항상 쿠키 전송
+  - Strict: HTTP 요청을 보낼때 목적지 서버 사이트 주소와 현재 브라우저 사이트 주소가 동일할때에만 보냄 ( first-party context 가 동일 )
+  - Lax: Strict 옵션 + <a /> 또는 document.location으로 url을 이동할때
+
+> XSS(Cross Site Scripting) : 해커가 삽입한 악의적인 Javascript 코드를 브라우저에서 실행하는 공격
+
+> CSRF(Cross-site Request Forgery) : 사용자의 인증정보를 탈취한 상태에서 사용자가 의도하지 않은 공격을 서버로 실행하게 하는 공격
+
+#### 쿠키 사용 사례
+
+- 로그인 세션 관리(세션 쿠키)
+- 사용자 설정 저장(예: "다시 보지 않음" 팝업창)
+- 사용자 행동 추적(방문 기록 등)
+- 서버와의 통신이 필요한 데이터 저장
+
+#### ✨ 프로젝트에 적용하기
+
+쿠키의 공유 범위는 도메인과 경로(path)에 의해 결정됩니다. 같은 도메인(예: example.com)에 대한 쿠키는 해당 도메인을 방문하는 모든 탭과 창에서 공유됩니다. 따라서 다음과 같은 상황이 발생할 수 있습니다.
+
+1. 사용자가 example.com에 로그인한 후 새 탭에서 example.com을 열면, 로그인 상태가 유지됩니다.
+2. 한 탭에서 쿠키 값을 변경하면 동일한 도메인의 다른 모든 탭에서도 그 변경사항이 적용됩니다.
+3. 여러 탭에서 같은 웹사이트를 사용할 때 사용자 설정이나 상태가 일관되게 유지됩니다.
+
+프로젝트에서 쿠키에 token이라고 정보를 넣어서 서버에서 받은 jwt token값을 관리했습니다. 그런데 한 서비스내에 일반/외부 사용자로 두 종류의 사용자가 생기면서 각 사용자에 따라 서버에서 같은 api 대해 다른 response를 받아야했습니다. 쿠키에서 탭 간에 토큰을 공유하기 때문에 사용자 상태를 다르게 두가지 탭을 동시에 사용하게 되면, 두 사용자의 토큰이 혼재되는 문제가 발생했습니다.
+
+하나의 token이 아니라 사용자 종류에 따라 token을 다른 키 값으로 쿠키에 저장했습니다.
+
+### Web Storage
+
+[Web Storage](https://developer.mozilla.org/ko/docs/Web/API/Storage)는 기존 웹 환경의 쿠키(Cookie)와 유사한 개념입니다. Web Storage는 몇 가지 쿠키의 단점을 개선하기 위해 등장했습니다.
+
+### 🤷‍♂️ 쿠키 대신 Web Storage가 등장한 이유
+
+1. **용량 제한**: 쿠키는 4KB로 제한되지만, Web Storage는 일반적으로 5~10MB까지 저장 가능합니다.
+2. **네트워크 트래픽**: 쿠키는 모든 HTTP 요청에 포함되지만, Web Storage는 필요할 때만 JavaScript를 통해 접근합니다.
+3. **사용 편의성**: Web Storage API를 활용하여 더 쉽게 데이터를 관리할 수 있습니다.
+4. **보안**: 쿠키와 달리 HttpOnly와 같은 제한이 없어서 JavaScript로 항상 접근 가능하지만, 서버로 자동 전송되지 않아 CSRF 공격에 덜 취약합니다.
+5. **데이터 지속성 차별화**: 세션스토리지와 로컬스토리지를 통해 데이터 지속성을 다르게 관리할 수 있습니다.
+
+#### Storage 객체
+
+Web Storage는 키와 값 형태로 저장됩니다. Web Storage API의 Storage 인터페이스는 특정 도메인의 세션 또는 로컬 스토리지에 접근하여 데이터를 추가, 수정, 삭제할 수 있도록 합니다.
+
+Storage 객체 주요 메서드:
+
+- **key(index)**: 주어진 인덱스의 키 이름을 반환합니다.
+- **getItem(key)**: 키에 해당하는 값을 반환합니다.
+- **setItem(key, value)**: 키-값 쌍을 저장합니다.
+- **removeItem(key)**: 키와 해당 값을 삭제합니다.
+- **clear()**: 모든 키-값 쌍을 삭제합니다.
+- **length**: 저장된 항목의 수를 반환합니다.
+
+### 세션 스토리지(Session Storage)
+
+[세션 스토리지](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage)는 브라우저가 열려있는 한 유효하며 만료 기간이 없습니다. 만약 같은 URL로 여러 탭을 열면 각 탭에 대해 새로운 sessionStorage를 생성합니다.
+
+쿠키가 가졌던 근본적인 문제인 도메인이 같으면 항상 쿠키를 보낸다는 것이 sessionStorage를 통해 해결되었습니다. 세션 스토리지는 같은 도메인이라도 각 탭이나 창마다 별도의 저장소를 유지합니다.
+
+세션이 유지되는 기간 동안만 데이터가 유지됩니다. 따라서 한 탭 내에서만 사용이 가능하며, 탭 종료( = 브라우저 창 닫기 ) 시 세션이 종료되며 데이터가 모두 삭제됩니다.
+예를 들어 카카오톡에서 웹뷰로 페이지를 열었다가 닫으면 세션 스토리지에 저장된 데이터는 날라갑니다.
+
+#### 세션 스토리지 사용 예시
+
+```jsx
+// key-value 형태로 sessionStorage에 저장
+sessionStorage.setItem("juice", "cola");
+
+// key로 value값 조회
+sessionStorage.getItem("juice"); // 'cola'
+
+// 객체에서 key로 key-value 제거
+sessionStorage.removeItem("juice");
+
+// sessionStorage 객체 삭제
+sessionStorage.clear();
+```
+
+#### 세션 스토리지 사용 사례
+
+- 일시적으로 필요한 데이터 저장이 필요할 때
+- 민감하지 않은 정보 저장할 때
+- 일회성 로그인(세션 유지)
+
+### 로컬 스토리지(Local Storage)
+
+[로컬 스토리지](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)에 저장된 데이터는 브라우저 세션 간에 공유됩니다. 탭이 종료되면 데이터가 사라지는 세션 스토리지와 다르게 데이터는 만료되지 않아 사용자가 명시적으로 삭제하거나 브라우저 캐시를 지우기 전까지 영구적으로 데이터를 저장할 수 있습니다. 또한 쿠키는 max-Age나 expires로 만료기간을 설정하면 브라우저를 닫아도 쿠키가 삭제되지 않지만 로컬 스토리지는 만료기간을 설정할 수 없어 수동으로 삭제하지 않는 한 저장됩니다.
+
+그러나 로컬 스토리지는 javaScript로 접근 가능하기 때문에 보안이 중요한 데이터(예: 비밀번호, 인증 토큰) 저장에는 적절하지 않습니다.
+
+#### 로컬 스토리지 사용 예시
+
+```jsx
+// key-value 형태로 localStorage에 저장
+localStorage.setItem("juice", "cola");
+
+// key로 value값 조회
+localStorage.getItem("juice"); // 'cola'
+
+// 객체에서 key로 key-value 제거
+localStorage.removeItem("juice");
+
+// localStorage 객체 삭제
+localStorage.clear();
+```
+
+또한 복잡한 객체나 배열은 직렬화 과정을 거쳐 저장됩니다.
+
+```jsx
+// 배열 저장
+const arr = [1, 2, 3, 4, 5];
+localStorage.setItem("numberList", JSON.stringify(arr));
+
+// 배열 조회
+const arrayData = localStorage.getItem("numberList");
+console.log(JSON.parse(arrayData)); // [1, 2, 3, 4, 5]
+
+// 객체 저장
+let user = {
+  name: "Kim",
+  city: "seoul",
+  birthday: 1994 / 04 / 22,
+};
+localStorage.setItem("user", JSON.stringify(user));
+
+// 객체 조회
+let userData = JSON.parse(localStorage.getItem("user"));
+console.log(userData.name); // "Kim"
+```
+
+#### 로컬 스토리지 사용 사례
+
+- 자동 로그인 기능
+- 사용자 설정(다크모드/라이트모드, 언어 설정 등)
+- 장바구니 기능
+- 오프라인 데이터 캐싱
+
+#### ✨ 프로젝트에 적용하기
+
+저는 좋아하는 연예인의 동영상을 모아볼 수 있는 사이트를 운영중입니다. 사용자가 로그인 없이 바로 사용할 수 있는 서비스인데, 해당 서비스에는 사용자 언어 설정 기능과 북마크 기능이 있습니다. 로그인이 없기에 영구적으로 사용자 데이터를 저장할 수 있도록 사용자가 설정한 언어와 북마크 내역을 localStorage에 저장했습니다.
+
+## 결론
+
+필요한 상황에 적절한 저장소를 선택한다면 성능, 보안, 사용자 경험을 모두 개선할 수 있습니다. 따라서 프로젝트를 진행하면 데이터의 크기와 지속성, 보완 수준, 서버의 크기를 비교하여 브라우저에서 사용자의 데이터를 안전하게 관리할 방법을 모색해야합니다.
+
+🙇‍♂️ 참고문헌
+
+[Local Storage & Session Storage란?](https://reveur1996.tistory.com/115)
+[SameSite 와 CSRF](https://velog.io/@wpark/SameSite-%EC%99%80-CSRF)
