@@ -1,0 +1,313 @@
+---
+title: "next.js에서 노션 데이터베이스 api 사용하기"
+publishedAt: "2025-03-19"
+summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next route handler를 이용한 cors 에러 해결기"
+---
+
+## 1. 서론
+
+현재 진행하는 사이드 프로젝트에서 정적인 데이터를 불러오는 기능이 필요했습니다.
+
+백엔드 개발자 없기에 데이터를 파일 내부에 JSON으로 관리할 수도 있었지만, 데이터 양이 많았고, 주기적으로 값을 업데이트해야 했습니다. 프로젝트 외부에서 데이터를 관리하는 방법을 찾던 중, 노션 api를 알게되었습니다.
+
+노션 api를 활용하면 노션에 있는 정보들을 불러올 수 있습니다. 노션을 데이터 저장소로 활용할 수 있는거죠.
+
+<img
+  width="271"
+  alt="스크린샷 2025-03-19 오후 10 27 07"
+  src="https://github.com/user-attachments/assets/4af48d9e-95e0-485a-8e97-e945fed531eb"
+/>
+
+저는 api로 불러올 수 있는 옵션 중 데이터베이스를 연동해보기로 하였습니다.
+
+## 2. 본론
+
+### notion API 연동
+
+1. [Notion Developer 페이지](https://developers.notion.com/docs/create-a-notion-integration)에서 원하는 워크스페이스를 등록하고 Notion Integration Token을 발급받습니다.
+2. 데이터를 저장할 데이터베이스를 생성하고, 해당 데이터베이스의 ID를 확인합니다.
+
+<img
+  width="894"
+  alt="image"
+  src="https://github.com/user-attachments/assets/e6c2f9f4-2f47-41f7-9a9a-8e040f92cddc"
+/>
+
+3. 프로젝트에서 Notion을 사용하기 위해 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js) 라이브러리를 `npm install @notionhq/client` 명령어로 설치합니다.
+
+### next.js에서 notion api 호출하기
+
+이 프로젝트에서는 사용자가 원하는 노래 키워드를 선택하면 해당하는 노래 데이터를 불러오는 기능을 구현해야 했습니다. 따라서 처음에는 클라이언트 컴포넌트에서 Notion API를 호출하도록 설계했습니다.
+
+```
+// .env
+
+NEXT_PUBLIC_NOTION_TOKEN="value"
+NEXT_PUBLIC_NOTION_DATABASE_ID="value"
+```
+
+먼저, api에서 사용할 환경 변수를 .env에 저장합니다. 이때 브라우저에서 환경 변수를 사용하려면 접두사로 `NEXT_PUBLIC_` 를 붙여야합니다.
+`NEXT_PUBLIC_` 를 붙이지 않으면 오직 Node.js 환경에서만 사용 가능합니다.
+실제로 `NEXT_PUBLIC_` 를 붙이지 않고 env 값을 출력하게 되면, 브라우저 콘솔에 undefined가 출력됩니다.
+
+```
+import { Client } from "@notionhq/client";
+
+const notionSecret = process.env.NEXT_PUBLIC_NOTION_TOKEN;
+const notionDatabaseId = process.env.NEXT_PUBLIC_NOTION_DATABASE_ID;
+
+const notion = new Client({ auth: notionSecret });
+
+export async function getSongs() {
+  const response = await notion.databases.query({
+    database_id: notionDatabaseId,
+  });
+
+  return response;
+}
+```
+
+그러나 위와 같은 방식으로 API를 호출했을 때 두 가지 문제가 발생했습니다.
+
+1 : notion api 호출시 cors 에러 발생 <br/>2. .env 파일내에 있는 환경변수를 사용할때 `NEXT_PUBLIC_` 으로 인한 보안 문제
+
+#### 문제1 : CORS 에러
+
+브라우저 **http://localhost:3000** 에서 **https://api.notion.com/v1/databases** 로 직접 요청을 보내면서 CORS(Cross-Origin Resource Sharing) 정책에 의해 차단되었습니다.
+
+> CORS(Cross-Origin Resource Sharing) : <br/> 웹 페이지가 자신과 다른 출처(origin)에 있는 리소스에 접근할 때, 보안상의 이유로 브라우저가 차단하는 SOP(Same-origin policy, 동일 출처 정책) 정책을 배경으로 합니다. 브라우저가 자신의 출처와 다른 출처로 부터 리소스 요청과 응답을 허용하는 정책입니다. <br/><br/> Origin(출처)란? : url에서 protocol + host + port 까지를 포함하는 주소입니다.
+
+![image](https://github.com/user-attachments/assets/20ec7837-e4af-42e5-8459-4a735e61776c)
+출처 : [https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏](https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏)
+
+#### 문제2 : env 환경 변수 보안 문제
+
+환경 변수를 .env 파일에서 불러올 때, `NEXT_PUBLIC_`을 붙이면 브라우저에서 직접 접근 가능합니다. 하지만, API 키와 같은 민감한 정보가 브라우저에 그대로 노출될 위험이 있습니다.
+
+두 문제를 해결하기 위해 Next.js에서 제공하는 [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) 활용하기로 했습니다.
+
+### Route Handlers를 활용한 api 호출
+
+#### 문제1 해결방안
+
+Route Handlers는 서버에서 데이터를 가져오고 클라이언트에 반환하는 역할을 합니다.
+이를 활용하면 Next.js 서버가 외부 API 요청을 대신 처리하여 클라이언트가 직접 API를 호출하지 않아도 되므로, CORS 문제를 해결할 수 있습니다.
+
+```
+// 동작 프로세스
+
+[클라이언트] (fetch("/api/notion"))
+     ⬇
+[Next.js 서버] (app/api/notion/route.ts 실행)
+     ⬇
+[외부 API] (https://api.notion.com/v1/databases)
+     ⬇
+[Next.js 서버] (응답을 받아 클라이언트로 전달)
+     ⬇
+[클라이언트] (응답을 받음)
+```
+
+따라서 `app/api/notion/route.ts` 파일에 커스텀 request handlers를 작성합니다.
+
+```
+// app/api/notion/route.ts
+
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { Client } from "@notionhq/client";
+
+
+const notionSecret = process.env.NOTION_TOKEN;
+const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+
+const notion = new Client({ auth: notionSecret });
+
+export async function POST(request: Request) {
+  if (!notionDatabaseId || !notionSecret) return;
+
+  try {
+    // 클라이언트에서 보낸 body 데이터 가져오기
+    const body = await request.json();
+    const selectedKeywordList: string[] = body.keywords || []; // 키워드 배열 받기
+
+    // 키워드 리스트로 filter 옵션 생성
+    const filterConditions = selectedKeywordList.map((keyword) => ({
+      property: "키워드",
+      multi_select: {
+        contains: keyword,
+      },
+    }));
+
+    // Notion API 요청
+    const response = await notion.databases.query({
+      database_id: notionDatabaseId,
+      filter: {
+        or: filterConditions, // 키워드 필터 적용
+      },
+    });
+
+    return NextResponse.json(response.results);
+  } catch (error) {
+    console.error("Notion API Error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch data" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+✭ 추가적으로 POST http 메서드로 변경하였습니다. 노션 공식문서에 따르면 [데이터베이스에서 filter 옵션](https://developers.notion.com/reference/post-database-query-filter)을 사용하기 위해서는 post 형식으로 작성해야한다고 나와있습니다.  
+따라서 post 요청시 사용자가 선택한 키워드(selectedKeywordList)가 포함된 데이터들을 filter의 or 조건으로 추가하였습니다.
+
+return 값은 json으로 변환하는 [NextResponse.json()](https://nextjs.org/docs/app/api-reference/functions/next-response) 메서드를 사용했습니다.
+
+```jsx
+// playlist.tsx
+
+const onSubmit = async () => {
+  // api 호출
+  await fetch("/api/notion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      keywords: ["청량한", "신나는"], // 사용자가 선택한 키워드
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("notion data", data);
+    })
+    .catch((error) => console.error(error));
+};
+```
+
+api/notion 요청이 정상적으로 처리되는지 개발자도구 - 네트워크탭에서 확인해보겠습니다.
+
+<img
+  width="445"
+  alt="2341123234"
+  src="https://github.com/user-attachments/assets/3affbc0c-4c88-49b3-a1fa-b4d2ec8567a6"
+/>
+
+- Sec-Fetch-Mode
+
+  - cors : CORS protocol에 대한 요청
+
+- sec-fetch-mode
+
+  - same-origin : 리소스를 주고받는 두 출처가 동일함
+
+#### 문제2 해결방안
+
+코드를 수정하면서 문제2 도 해결되었습니다.
+
+처음에는 `.env`에서 환경 변수를 브라우저에서 사용하기 위해서 `NEXT_PUBLIC_` 접두사를 붙여 했지만, 보안 이슈가 발생했습니다. route handler를 도입하면서 `NEXT_PUBLIC_`를 제거하여 서버에서만 환경 변수를 사용하도록 변경하러 보안성을 높였습니다.
+
+```jsx
+// .env
+
+NOTION_TOKEN = "value";
+NOTION_DATABASE_ID = "value";
+```
+
+최종적으로 노션 데이터베이스에서 다음과 같은 형태의 데이터를 얻을 수 있습니다.
+
+```js
+[
+  {
+    object: "page",
+    created_time: "2025-03-15T09:37:00.000Z",
+    last_edited_time: "2025-03-16T09:27:00.000Z",
+    // ...
+    properties: {
+      앨범: {
+        id: "CQVX",
+        type: "select",
+        select: {
+          id: "WmxM",
+          name: "ONF : MY NAME",
+          color: "purple",
+        },
+      },
+      멜론Id: {
+        id: "_%7BfD",
+        type: "rich_text",
+        rich_text: [
+          {
+            // ..
+            plain_text: "32082017",
+            href: null,
+          },
+        ],
+      },
+      키워드: {
+        id: "~G%7Ci",
+        type: "multi_select",
+        multi_select: [
+          {
+            id: "4c575e77-e345-47b7-87e8-8ab5f08670eb",
+            name: "청량한",
+            color: "blue",
+          },
+          {
+            id: "b86fa446-5a60-41b1-9ee5-76f0a3cfcd36",
+            name: "기분 좋은",
+            color: "orange",
+          },
+          {
+            id: "bb64899a-57fb-42f6-9d3e-8d292655c760",
+            name: "신나는",
+            color: "yellow",
+          },
+        ],
+      },
+      이름: {
+        id: "title",
+        type: "title",
+        title: [
+          {
+            type: "text",
+            text: {
+              content: "Beautiful Beautiful",
+              link: null,
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "Beautiful Beautiful",
+            href: null,
+          },
+        ],
+      },
+    },
+    // ...
+  },
+  // ...
+];
+```
+
+이제 notion 데이터를 원하는 형태로 가공하여 페이지에서 사용할 수 있습니다.
+
+## 3. 결론
+
+이번 프로젝트에서 정적인 데이터를 효과적으로 관리하기 위해 노션을 활용해 보았는데, 예상보다 훨씬 유용했습니다. 실시간으로 데이터를 업데이트하고, 노션에서 제공하는 multi_select와 같은 프로퍼티를 활용하면서 손쉽게 데이터를 관리할 수 있다는 점에서 큰 장점이 있었습니다.
+
+또한, CORS 문제를 해결하면서 Next.js의 Route Handlers를 적극적으로 활용할 수 있었고, 환경 변수 보안 문제까지 해결할 수 있었습니다.
+
+서비스에 필요한 기능을 명확하면서 코드로 구현해보는 과정은 정말 재밌다고 생각합니다. 실제로는 이렇게 동작하는구나~ 그래서 이 개념이 필요한거구나~ 를 몸소 깨닫는 경험이었습니다.
+
+다음 글에서는 노션으로 받아온 데이터를 활용해 멜론 음원사이트에서 사용할 수 있는 원터치 플레이리스트를 만드는 방법에 대해 알아보겠습니다.
+
+🙇‍♂️ 참고문헌
+
+[CORS(교차 출처 리소스 공유)](https://docs.tosspayments.com/resources/glossary/cors)
+
+[[노션 API] 노션 API 연동으로 데이터베이스 사용하기](https://wooncloud.tistory.com/131)
