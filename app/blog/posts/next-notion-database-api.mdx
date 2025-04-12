@@ -12,7 +12,7 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 
 노션 api를 활용하면 노션에 있는 정보들을 불러올 수 있습니다. 노션을 데이터 저장소로 활용할 수 있는거죠.
 
-![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424497736-4af48d9e-95e0-485a-8e97-e945fed531eb.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T072937Z&X-Amz-Expires=300&X-Amz-Signature=758bc8ce90156997e82844bea184037b5a131c071644b387e0225d1aca6765b6&X-Amz-SignedHeaders=host)
+![Image](https://private-user-images.githubusercontent.com/62867581/433030116-5ba6a1c0-7622-42ad-9eed-6536b0055ff4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDc2MDAsIm5iZiI6MTc0NDQ0NzMwMCwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzAxMTYtNWJhNmExYzAtNzYyMi00MmFkLTllZWQtNjUzNmIwMDU1ZmY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NDE0MFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdjYmEyZDE0M2FjNWI2Zjk3OGQ0ZTc4YTVjYjg1NGZlZWNhMjNjZjI3OWVlN2Y2ZThmOTU5MzE1NDg4NzRhZjgmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.CWfG18PdMW5tW0hAEuWLYuJjzN3UGxz1D_Aa4PFV6oY)
 
 저는 api로 불러올 수 있는 옵션 중 데이터베이스를 연동해보기로 하였습니다.
 
@@ -23,7 +23,7 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 1. [Notion Developer 페이지](https://developers.notion.com/docs/create-a-notion-integration)에서 원하는 워크스페이스를 등록하고 Notion Integration Token을 발급받습니다.
 2. 데이터를 저장할 데이터베이스를 생성하고, 해당 데이터베이스의 ID를 확인합니다.
 
-![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424343858-e6c2f9f4-2f47-41f7-9a9a-8e040f92cddc.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T073007Z&X-Amz-Expires=300&X-Amz-Signature=a878ef8c5cb2faf53c8bd6839a3478714897f240c4dc006a1b0b62cd84bffd17&X-Amz-SignedHeaders=host)
+![Image](https://private-user-images.githubusercontent.com/62867581/433030172-54b7c484-d014-4546-8bd7-ae49daf591cb.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDc2MDAsIm5iZiI6MTc0NDQ0NzMwMCwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzAxNzItNTRiN2M0ODQtZDAxNC00NTQ2LThiZDctYWU0OWRhZjU5MWNiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NDE0MFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTE5OGQ5YzE4YWI3ZWIzN2M1OWE2MDBkY2Y3NTAwMWRjMjg3NGNiMTZmNDJiN2ZmZmUzMzAwNGE2ZGI4ODQ5ODkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.sXbfBGJBhyL5Gb6EU1ofg9faEUx07_Y1fbvR744clf8)
 
 3. 프로젝트에서 Notion을 사용하기 위해 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js) 라이브러리를 `npm install @notionhq/client` 명령어로 설치합니다.
 
