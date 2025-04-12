@@ -12,11 +12,7 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 
 노션 api를 활용하면 노션에 있는 정보들을 불러올 수 있습니다. 노션을 데이터 저장소로 활용할 수 있는거죠.
 
-<img
-  width="271"
-  alt="스크린샷 2025-03-19 오후 10 27 07"
-  src="https://github.com/user-attachments/assets/4af48d9e-95e0-485a-8e97-e945fed531eb"
-/>
+![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424497736-4af48d9e-95e0-485a-8e97-e945fed531eb.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T072937Z&X-Amz-Expires=300&X-Amz-Signature=758bc8ce90156997e82844bea184037b5a131c071644b387e0225d1aca6765b6&X-Amz-SignedHeaders=host)
 
 저는 api로 불러올 수 있는 옵션 중 데이터베이스를 연동해보기로 하였습니다.
 
@@ -27,11 +23,7 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 1. [Notion Developer 페이지](https://developers.notion.com/docs/create-a-notion-integration)에서 원하는 워크스페이스를 등록하고 Notion Integration Token을 발급받습니다.
 2. 데이터를 저장할 데이터베이스를 생성하고, 해당 데이터베이스의 ID를 확인합니다.
 
-<img
-  width="894"
-  alt="image"
-  src="https://github.com/user-attachments/assets/e6c2f9f4-2f47-41f7-9a9a-8e040f92cddc"
-/>
+![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424343858-e6c2f9f4-2f47-41f7-9a9a-8e040f92cddc.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T073007Z&X-Amz-Expires=300&X-Amz-Signature=a878ef8c5cb2faf53c8bd6839a3478714897f240c4dc006a1b0b62cd84bffd17&X-Amz-SignedHeaders=host)
 
 3. 프로젝트에서 Notion을 사용하기 위해 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js) 라이브러리를 `npm install @notionhq/client` 명령어로 설치합니다.
 
@@ -77,7 +69,7 @@ export async function getSongs() {
 
 > CORS(Cross-Origin Resource Sharing) : <br/> 웹 페이지가 자신과 다른 출처(origin)에 있는 리소스에 접근할 때, 보안상의 이유로 브라우저가 차단하는 SOP(Same-origin policy, 동일 출처 정책) 정책을 배경으로 합니다. 브라우저가 자신의 출처와 다른 출처로 부터 리소스 요청과 응답을 허용하는 정책입니다. <br/><br/> Origin(출처)란? : url에서 protocol + host + port 까지를 포함하는 주소입니다.
 
-![image](https://github.com/user-attachments/assets/20ec7837-e4af-42e5-8459-4a735e61776c)
+![image](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424347002-20ec7837-e4af-42e5-8459-4a735e61776c.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T072951Z&X-Amz-Expires=300&X-Amz-Signature=040f820a974c09e3b6a71368e38f5c11c4c469627e05cba8096f7da67d31c0a9&X-Amz-SignedHeaders=host)
 출처 : [https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏](https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏)
 
 #### 문제2 : env 환경 변수 보안 문제
@@ -186,11 +178,7 @@ const onSubmit = async () => {
 
 api/notion 요청이 정상적으로 처리되는지 개발자도구 - 네트워크탭에서 확인해보겠습니다.
 
-<img
-  width="445"
-  alt="2341123234"
-  src="https://github.com/user-attachments/assets/3affbc0c-4c88-49b3-a1fa-b4d2ec8567a6"
-/>
+![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424347882-3affbc0c-4c88-49b3-a1fa-b4d2ec8567a6.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T073047Z&X-Amz-Expires=300&X-Amz-Signature=923d9e80a5396bfbc1ce8cd6a7b766b59912ed7e0ce42e0c70c96ca4a21c769c&X-Amz-SignedHeaders=host)
 
 - Sec-Fetch-Mode
 
