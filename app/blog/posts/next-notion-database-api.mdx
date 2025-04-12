@@ -69,7 +69,7 @@ export async function getSongs() {
 
 > CORS(Cross-Origin Resource Sharing) : <br/> 웹 페이지가 자신과 다른 출처(origin)에 있는 리소스에 접근할 때, 보안상의 이유로 브라우저가 차단하는 SOP(Same-origin policy, 동일 출처 정책) 정책을 배경으로 합니다. 브라우저가 자신의 출처와 다른 출처로 부터 리소스 요청과 응답을 허용하는 정책입니다. <br/><br/> Origin(출처)란? : url에서 protocol + host + port 까지를 포함하는 주소입니다.
 
-![image](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424347002-20ec7837-e4af-42e5-8459-4a735e61776c.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T072951Z&X-Amz-Expires=300&X-Amz-Signature=040f820a974c09e3b6a71368e38f5c11c4c469627e05cba8096f7da67d31c0a9&X-Amz-SignedHeaders=host)
+![image](https://private-user-images.githubusercontent.com/62867581/433032771-8a94c055-cd2b-4265-af41-1604ff0742d8.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDgwNTIsIm5iZiI6MTc0NDQ0Nzc1MiwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzI3NzEtOGE5NGMwNTUtY2QyYi00MjY1LWFmNDEtMTYwNGZmMDc0MmQ4LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NDkxMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWZiZThmMzk5YzRkZjMxMjc4ZmMwZWEyZDI2NGFjZTViZTRjODAzYTJjYWMyN2Q0Yjg2ZDEyMWE2NTMyZjkzZjYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.f1I86m-qwkgKsbp7X0IcAGeweJY26pBvSkBOUITo3vQ)
 출처 : [https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏](https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏)
 
 #### 문제2 : env 환경 변수 보안 문제
@@ -178,7 +178,7 @@ const onSubmit = async () => {
 
 api/notion 요청이 정상적으로 처리되는지 개발자도구 - 네트워크탭에서 확인해보겠습니다.
 
-![content](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/424347882-3affbc0c-4c88-49b3-a1fa-b4d2ec8567a6.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T073047Z&X-Amz-Expires=300&X-Amz-Signature=923d9e80a5396bfbc1ce8cd6a7b766b59912ed7e0ce42e0c70c96ca4a21c769c&X-Amz-SignedHeaders=host)
+![content](https://private-user-images.githubusercontent.com/62867581/433032785-0b4d5223-c420-4e8c-b58f-620162c84133.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDgwNTIsIm5iZiI6MTc0NDQ0Nzc1MiwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzI3ODUtMGI0ZDUyMjMtYzQyMC00ZThjLWI1OGYtNjIwMTYyYzg0MTMzLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NDkxMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk4YWIxYzkyM2Q3YjY0NTM2ZDZlNTYxYWIzNjFhMTY3YTllMGQ1ZmU5ZWI0NDE0NjM4ZjVhNGRjMzM1MzY2OWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.FR1xV7Bf2B0Lx1Y2Le_p74lVFO69p2_LHAO3ijsJa6o)
 
 - Sec-Fetch-Mode
 

@@ -1,5 +1,5 @@
 ---
-title: "노션 API로 멜론 플레이리스트 생성하기"
+title: "노션 API로 멜론 원터치 플레이리스트 생성하기"
 publishedAt: "2025-04-12"
 summary: "노션 데이터베이스 API로 받아온 데이터를 활용해 멜론 음원사이트에서 사용할 수 있는 원클릭 플레이리스트를 만들기"
 ---
@@ -314,7 +314,7 @@ const shuffledSongs = [...sortedPlaylist].sort(() => Math.random() - 0.5);
 
 사용자가 버튼을 클릭하면 각 노래별 멜론Id를 join하여 멜론Id 주소를 만듭니다. 멜론은 111,222,333 과 같이 곡 Id를 ,(쉼표)로 구분해요.
 
-중요한점은 아이폰, 안드로이드에 들어가는 url이 다릅니다. url을 확인해주세요.
+중요한 점은 아이폰, 안드로이드에 들어가는 url이 다릅니다. url을 확인해주세요.
 
 ```jsx
 const iosMelon = "meloniphone://play/?ctype=1&menuid=0&cid";
@@ -372,7 +372,7 @@ melonapp://play?ctype=1&amp;menuid=1000002721&amp;cid=36838796,36838797,31118050
 
 다음과 같이 동작합니다! 🚀
 
-![alt text](https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/433023869-4983116b-9000-4f47-9c0b-28a6414c37b0.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T080837Z&X-Amz-Expires=300&X-Amz-Signature=b28cb111874bce15885c0f4c6cddcb29e92c702d1aeddbfbc7b0e39a4ddf1cad&X-Amz-SignedHeaders=host)
+![playlist](https://private-user-images.githubusercontent.com/62867581/433032864-03ed4ae9-d5d3-4591-88e8-5d669411b1bb.gif?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDgxMzQsIm5iZiI6MTc0NDQ0NzgzNCwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzI4NjQtMDNlZDRhZTktZDVkMy00NTkxLTg4ZTgtNWQ2Njk0MTFiMWJiLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NTAzNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTIwN2FjMTY5OThmMzY2ZDc1NTI5YjMyMTgwMWM5ODAzMDc1OTE1NTdlYzQxYzdjZGFhMWYwMGJhMTVhNDUzOGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.U0Qxbr7cV7C_avUvkx6oGUK0td88Jj7xDkcf9x2emGY)
 
 이렇게 각 사이트별로 재생목록을 만드는 것을 ‘원클릭 스밍리스트’라고 하는데요. 원하는 곡 ID만 알고 있다면 친구에게 재생목록을 공유할때도 사용할 수 있을 것 같아요.
 
@@ -413,7 +413,7 @@ export function useImageDownload() {
 <img
   width="350"
   alt="ONF_Playlist"
-  src="https://github-production-user-asset-6210df.s3.amazonaws.com/62867581/433020468-876bd3be-7bcb-4c63-854e-f28d25e4a8d6.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T074117Z&X-Amz-Expires=300&X-Amz-Signature=9da310295275434c86c61d46768fa4f64e77377eb9d48356450b055e0cffcde4&X-Amz-SignedHeaders=host"
+  src="https://private-user-images.githubusercontent.com/62867581/433032933-2164d2fe-0376-42d5-a0e1-3d7e84837fc7.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ0NDgxOTEsIm5iZiI6MTc0NDQ0Nzg5MSwicGF0aCI6Ii82Mjg2NzU4MS80MzMwMzI5MzMtMjE2NGQyZmUtMDM3Ni00MmQ1LWEwZTEtM2Q3ZTg0ODM3ZmM3LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEyVDA4NTEzMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWExZDI4M2I3ZWI0YTIyMTI1Yzg2ZGRjNzRiOWE3MGQ5NTNhZDc4OTY0YTAzNGExZjczNDg5ZTY0Yzk1ZmNiNTcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.FicerLjFU33JhE6rS68JW05HgSbNXLTHzJ1AWCfa0U0"
 />
 
 ## 결론
