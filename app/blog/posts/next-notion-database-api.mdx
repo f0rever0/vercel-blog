@@ -12,9 +12,9 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 
 노션 api를 활용하면 노션에 있는 정보들을 불러올 수 있습니다. 노션을 데이터 저장소로 활용할 수 있는거죠.
 
-![Image](https://private-user-images.githubusercontent.com/62867581/433176584-4fe08c5b-7a54-40ad-9aeb-7e0a24d4ab4a.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ1ODg1MTAsIm5iZiI6MTc0NDU4ODIxMCwicGF0aCI6Ii82Mjg2NzU4MS80MzMxNzY1ODQtNGZlMDhjNWItN2E1NC00MGFkLTlhZWItN2UwYTI0ZDRhYjRhLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEzVDIzNTAxMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTMzMTVjNDY1ZDY0YjliYjBmOGQ2OTE2MmMyNGU4NThkNDFmZGVmOTFkODU2MDcwNjFjODI1MjY2YzA1MDliOWEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.qydt8CWwbys0vw0Lt6rLrmWactoW48pGanvV4rWRgqo)
+![Image](/images/notion_api_database.png)
 
-저는 api로 불러올 수 있는 옵션 중 데이터베이스를 연동해보기로 하였습니다.
+저는 노션에서 제공하는 api로 불러올 수 있는 옵션 중 데이터베이스를 연동해보기로 하였습니다.
 
 ## 2. 본론
 
@@ -23,9 +23,7 @@ summary: "노션 api를 사용하여 노션 데이터베이스 연결 및 next r
 1. [Notion Developer 페이지](https://developers.notion.com/docs/create-a-notion-integration)에서 원하는 워크스페이스를 등록하고 Notion Integration Token을 발급받습니다.
 2. 데이터를 저장할 데이터베이스를 생성하고, 해당 데이터베이스의 ID를 확인합니다.
 
-![Image](https://private-user-images.githubusercontent.com/62867581/433176583-126b6d91-c7fb-4621-bcbb-2c9cf9e59f38.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ1ODg1MTAsIm5iZiI6MTc0NDU4ODIxMCwicGF0aCI6Ii82Mjg2NzU4MS80MzMxNzY1ODMtMTI2YjZkOTEtYzdmYi00NjIxLWJjYmItMmM5Y2Y5ZTU5ZjM4LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEzVDIzNTAxMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTYxN2RiOTY0NjA3ODU5NjE2ZTFhZjM5ZmYyYjBjMTgzNTQ0NGVjNzM1YjA2MGIwMGQ4YzVmZDZkYmQ5ZTMwYmUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.a3EAg66Ol6NTUq4vfqyncsqnQ8pIOaH-W-qaszUtInc)
-
-3. 프로젝트에서 Notion을 사용하기 위해 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js) 라이브러리를 `npm install @notionhq/client` 명령어로 설치합니다.
+![Image](/images/notion_database.png) 3. 프로젝트에서 Notion을 사용하기 위해 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js) 라이브러리를 `npm install @notionhq/client` 명령어로 설치합니다.
 
 ### next.js에서 notion api 호출하기
 
@@ -69,7 +67,7 @@ export async function getSongs() {
 
 > CORS(Cross-Origin Resource Sharing) : <br/> 웹 페이지가 자신과 다른 출처(origin)에 있는 리소스에 접근할 때, 보안상의 이유로 브라우저가 차단하는 SOP(Same-origin policy, 동일 출처 정책) 정책을 배경으로 합니다. 브라우저가 자신의 출처와 다른 출처로 부터 리소스 요청과 응답을 허용하는 정책입니다. <br/><br/> Origin(출처)란? : url에서 protocol + host + port 까지를 포함하는 주소입니다.
 
-![image](https://private-user-images.githubusercontent.com/62867581/433176730-157ce3d3-8cbe-48bd-a3de-6b5d21448aca.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ1ODg2NjUsIm5iZiI6MTc0NDU4ODM2NSwicGF0aCI6Ii82Mjg2NzU4MS80MzMxNzY3MzAtMTU3Y2UzZDMtOGNiZS00OGJkLWEzZGUtNmI1ZDIxNDQ4YWNhLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEzVDIzNTI0NVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWNjMzZmNjE5YjAyY2RmMTkzMDk0MzNmYjE0ZDg4NDIxNjcyZmM2MTYyMTMzM2Q0MzQ0Mzk4MjA4YWI0Yjg5NzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.x4EnRBDGjSoCSfIMTtMy7jJfh-Jf4N48g5zG9JX6r8o)
+![Image](/images/cors-error.png)
 출처 : [https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏](https://inpa.tistory.com/entry/WEB-📚-CORS-💯-정리-해결-방법-👏)
 
 #### 문제2 : env 환경 변수 보안 문제
@@ -178,7 +176,7 @@ const onSubmit = async () => {
 
 api/notion 요청이 정상적으로 처리되는지 개발자도구 - 네트워크탭에서 확인해보겠습니다.
 
-![content](https://private-user-images.githubusercontent.com/62867581/433176731-f750866e-ed0e-4e91-93ac-29592d3997ef.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDQ1ODg2NjUsIm5iZiI6MTc0NDU4ODM2NSwicGF0aCI6Ii82Mjg2NzU4MS80MzMxNzY3MzEtZjc1MDg2NmUtZWQwZS00ZTkxLTkzYWMtMjk1OTJkMzk5N2VmLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA0MTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNDEzVDIzNTI0NVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTUzNDJjNjVkMzQ0NDRlOTcwMTYyODM0NzQ2ODc5NTliNzBjMzQ5YmU3NjNlYjAyN2Y5MmQ1NGY3MDI1ZjM1YjAmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.IJUARFEQ7PaBMDXV7XmoHvcSSGrHdDcv-cUwKZ3Kv1M)
+![Image](/images/network.png)
 
 - Sec-Fetch-Mode
 
